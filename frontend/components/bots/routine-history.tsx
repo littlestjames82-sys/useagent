@@ -77,10 +77,12 @@ export function RoutineHistoryList({ firings, now }: { firings: ApiFiring[]; now
 export function RoutineHistoryDrawer({
   bot,
   routine,
+  open,
   onClose,
 }: {
   bot: ApiBot;
-  routine: ApiRoutine | null;
+  routine: ApiRoutine;
+  open: boolean;
   onClose: () => void;
 }) {
   const now = useNow();
@@ -88,32 +90,31 @@ export function RoutineHistoryDrawer({
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!routine) return;
     try {
       setFirings(await fetchRoutineHistory(bot.id, routine.id));
       setError(null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : OFFLINE_MESSAGE);
     }
-  }, [bot.id, routine]);
+  }, [bot.id, routine.id]);
 
+  // Refetch on every open; on close keep the list so the slide-out does not flash a skeleton.
   useEffect(() => {
+    if (!open) return;
     setFirings(null);
     setError(null);
     void load();
-  }, [load]);
+  }, [open, load]);
 
   return (
-    <Drawer.Root open={routine !== null} onOpenChange={(next) => !next && onClose()}>
+    <Drawer.Root open={open} onOpenChange={(next) => !next && onClose()}>
       <Drawer.Content className="max-w-[480px]">
         <Drawer.Header className="border-b border-border-button-default">
           <div className="min-w-0 flex-1">
             <Drawer.Title className="truncate text-body-medium text-text-primary">
-              {routine?.name ?? "Run history"}
+              {routine.name}
             </Drawer.Title>
-            {routine && (
-              <p className="mt-0.5 truncate text-caption-1-regular text-text-tertiary">{cadenceLabel(routine.cron)}</p>
-            )}
+            <p className="mt-0.5 truncate text-caption-1-regular text-text-tertiary">{cadenceLabel(routine.cron)}</p>
           </div>
         </Drawer.Header>
 

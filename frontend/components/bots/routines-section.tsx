@@ -119,7 +119,7 @@ function RoutineRow({
           {error}
         </p>
       )}
-      <RoutineHistoryDrawer bot={bot} routine={historyOpen ? routine : null} onClose={() => setHistoryOpen(false)} />
+      <RoutineHistoryDrawer bot={bot} routine={routine} open={historyOpen} onClose={() => setHistoryOpen(false)} />
       <Modal.Root open={confirming} onOpenChange={setConfirming}>
         <Modal.Content className="max-w-[400px] rounded-2xl border border-border-button-default bg-background-primary-default shadow-dropdown">
           <Modal.Header
