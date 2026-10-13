@@ -16,17 +16,19 @@ export function mermaidThemeName(isDark: boolean): "dark" | "default" {
   return isDark ? "dark" : "default";
 }
 
+/** Dark-scheme themes: the `html.dark, html.dusk, ...` list in app/globals.css. */
+const DARK_THEMES = ["dark", "dusk", "aura", "harbor", "phosphor", "slate", "sakura-night"];
+const isDarkRoot = (root: Element) => DARK_THEMES.some((theme) => root.classList.contains(theme));
+
 /** The app theme lives on the <html> class list (next-themes); follow it so
  *  a diagram re-renders when the user flips between light and dark. */
 function useIsDarkTheme(): boolean {
   const [isDark, setIsDark] = useState<boolean>(
-    () =>
-      typeof document !== "undefined" &&
-      document.documentElement.classList.contains("dark"),
+    () => typeof document !== "undefined" && isDarkRoot(document.documentElement),
   );
   useEffect(() => {
     const root = document.documentElement;
-    const sync = () => setIsDark(root.classList.contains("dark"));
+    const sync = () => setIsDark(isDarkRoot(root));
     sync();
     const observer = new MutationObserver(sync);
     observer.observe(root, { attributes: true, attributeFilter: ["class"] });
@@ -35,13 +37,7 @@ function useIsDarkTheme(): boolean {
   return isDark;
 }
 
-export function MermaidDiagram({
-  code,
-  className,
-}: {
-  code: string;
-  className?: string;
-}) {
+export function MermaidDiagram({ code, className }: { code: string; className?: string }) {
   const [svg, setSvg] = useState<string | null>(null);
   const isDark = useIsDarkTheme();
   const instanceId = useId().replace(/[^a-zA-Z0-9]/g, "");
@@ -55,16 +51,15 @@ export function MermaidDiagram({
         mermaid.initialize({
           startOnLoad: false,
           securityLevel: "strict",
+          suppressErrorRendering: true,
           theme: mermaidThemeName(isDark),
         });
         const rendered = await mermaid.render(diagramId, code);
         if (!cancelled) setSvg(rendered.svg);
       } catch {
         // Unparseable source (a half-streamed block, a typo): fall back to
-        // the code block below. Mermaid also appends its own error graphic
-        // to the document when a render fails; remove it, so the code block
-        // is the only thing the reader sees.
-        document.getElementById(diagramId)?.remove();
+        // the code block below. suppressErrorRendering keeps mermaid from
+        // drawing its error graphic and removes its temporary nodes.
         if (!cancelled) setSvg(null);
       }
     })();

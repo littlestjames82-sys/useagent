@@ -10,10 +10,10 @@ import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import { CodeBlock } from "@/components/ai/code-block";
 import { type OpenWorkpiece, useOpenWorkpiece } from "@/components/chat/workspace-open-context";
-import { MermaidDiagram } from "./mermaid-diagram";
 import { backendFetch } from "@/lib/backend-fetch";
 import { getFaviconUrl } from "@/lib/favicon";
 import { cx } from "@/utils/cx";
+import { MermaidDiagram } from "./mermaid-diagram";
 
 /** The site favicon ahead of an external link, so a source reads at a glance;
  *  nothing when the site has none (the link text stands alone). */
